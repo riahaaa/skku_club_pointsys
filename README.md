@@ -1,0 +1,1 @@
+# skku_club_pointsys
