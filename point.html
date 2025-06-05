@@ -1,0 +1,25 @@
+<form id="form">
+  <input type="text" id="user" placeholder="User ID">
+  <input type="text" id="act" placeholder="Activity">
+  <input type="number" id="dur" placeholder="Duration">
+  <button type="submit">보내기</button>
+</form>
+
+<script>
+document.getElementById('form').onsubmit = async (e) => {
+  e.preventDefault();
+  const data = {
+    user_id: document.getElementById('user').value,
+    activity: document.getElementById('act').value,
+    duration: parseInt(document.getElementById('dur').value)
+  };
+
+  const res = await fetch('http://localhost:3000/api/activity', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  const result = await res.json();
+  alert(`활동 ${result.activity} → 포인트: ${result.points}`);
+};
+</script>
