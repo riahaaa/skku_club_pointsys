@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>활동 등록</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/register_style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>활동 등록</h1>
+    <form id="registrationForm">
+      <div class="form-group">
+        <label for="studentId">학번:</label>
+        <input type="text" id="studentId" required />
+      </div>
+      <div class="form-group">
+        <label for="name">이름:</label>
+        <input type="text" id="name" required />
+      </div>
+      <div class="form-group">
+        <label for="activity">활동명:</label>
+        <input type="text" id="activity" required />
+      </div>
+      <div class="form-group">
+        <label for="duration">활동 시간 (분):</label>
+        <input type="number" id="duration" required min="0" />
+      </div>
+      <div class="form-group">
+        <label for="adminCode">관리자 코드:</label>
+        <input type="text" id="adminCode" required />
+      </div>
+      <button type="submit">포인트 추가 요청</button>
+      <div id="message" class="message"></div>
+    </form>
+    <div class="button-container">
+      <a href="index.html" class="button">메인 페이지로 돌아가기</a>
+    </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import {
+      getFirestore, doc, getDoc, setDoc,
+      collection, addDoc, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFLLPA5Qu-LvRKvJYeNtbFFQKd7U89ymc",
+      authDomain: "skkuclub-7fe2f.firebaseapp.com",
+      projectId: "skkuclub-7fe2f",
+      storageBucket: "skkuclub-7fe2f.firebasestorage.app",
+      messagingSenderId: "275985224768",
+      appId: "1:275985224768:web:c81ba81a0ac40c60a1fba5",
+      measurementId: "G-7N8H7ZJLH1"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    document.getElementById('registrationForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const studentId = document.getElementById('studentId').value.trim();
+      const name = document.getElementById('name').value.trim();
+      const activity = document.getElementById('activity').value.trim();
+      const duration = parseInt(document.getElementById('duration').value.trim());
+      const adminCode = document.getElementById('adminCode').value.trim();
+      const messageBox = document.getElementById('message');
+
+      if (adminCode !== 'admin123') {
+        messageBox.textContent = "❌ 관리자 코드가 올바르지 않습니다.";
+        messageBox.style.color = 'red';
+        return;
+      }
+
+      if (!studentId || !name || !activity || isNaN(duration)) {
+        messageBox.textContent = "❗ 모든 항목을 올바르게 입력하세요.";
+        messageBox.style.color = 'red';
+        return;
+      }
+
+      try {
+        const userRef = doc(db, "users", studentId);
+        const snapshot = await getDoc(userRef);
+        const prev = snapshot.exists() ? snapshot.data().points : 0;
+        const earned = Math.floor(duration / 10) * 5;
+        const updated = prev + earned;
+
+        // 포인트 반영
+        await setDoc(userRef, {
+          user_id: studentId,
+          name: name,
+          points: updated,
+          last_activity: activity,
+          last_duration: duration,
+          last_updated: new Date()
+        });
+
+        // 포인트 변화 기록
+        const historyRef = collection(userRef, "history");
+        await addDoc(historyRef, {
+          type: "활동",
+          amount: earned,
+          before: prev,
+          after: updated,
+          description: activity,
+          timestamp: serverTimestamp()
+        });
+
+        messageBox.textContent = `✅ ${activity} 활동 등록 완료! (+${earned}점, 총 ${updated}점)`;
+        messageBox.style.color = 'green';
+
+      } catch (err) {
+        console.error(err);
+        messageBox.textContent = "❗ 등록 중 오류가 발생했습니다.";
+        messageBox.style.color = 'red';
+      }
+    });
+  </script>
+</body>
+</html>

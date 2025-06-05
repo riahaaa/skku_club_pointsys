@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>포인트 교환</title>
+  <link rel="stylesheet" href="css/exchange_style.css" />
+
+  <style>
+    .input-area {
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .input-area input {
+      padding: 8px;
+      width: 200px;
+      margin-right: 10px;
+      border-radius: 8px;
+    }
+
+    .item-image {
+      width: 120px;
+      height: auto;
+      margin-top: 10px;
+    }
+
+    .exchange-item {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .exchange-button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      border: none;
+      background: #0078ff;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import {
+      getFirestore, doc, getDoc, updateDoc,
+      collection, addDoc, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFLLPA5Qu-LvRKvJYeNtbFFQKd7U89ymc",
+      authDomain: "skkuclub-7fe2f.firebaseapp.com",
+      projectId: "skkuclub-7fe2f",
+      storageBucket: "skkuclub-7fe2f.firebasestorage.app",
+      messagingSenderId: "275985224768",
+      appId: "1:275985224768:web:c81ba81a0ac40c60a1fba5",
+      measurementId: "G-7N8H7ZJLH1"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const studentIdInput = document.getElementById("studentId");
+      const exchangeButtons = document.querySelectorAll(".exchange-button");
+
+      exchangeButtons.forEach(button => {
+        button.addEventListener("click", async () => {
+          const studentId = studentIdInput.value.trim();
+          const requiredPoints = parseInt(button.dataset.requiredPoints);
+          const itemName = button.dataset.itemName;
+
+          if (!studentId) {
+            alert("먼저 학번을 입력하세요!");
+            return;
+          }
+
+          const userRef = doc(db, "users", studentId);
+          const snapshot = await getDoc(userRef);
+
+          if (!snapshot.exists()) {
+            alert("❌ 해당 학번의 사용자를 찾을 수 없습니다.");
+            return;
+          }
+
+          const currentPoints = snapshot.data().points ?? 0;
+
+          if (currentPoints < requiredPoints) {
+            alert(`❌ 포인트가 부족합니다. (${currentPoints}점 보유, ${requiredPoints}점 필요)`);
+            return;
+          }
+
+          const newPoints = currentPoints - requiredPoints;
+
+          // 포인트 차감
+          await updateDoc(userRef, { points: newPoints });
+
+          // 기록 남기기 (history 서브컬렉션)
+          const historyRef = collection(userRef, "history");
+          await addDoc(historyRef, {
+            type: "교환",
+            amount: -requiredPoints,
+            before: currentPoints,
+            after: newPoints,
+            description: itemName,
+            timestamp: serverTimestamp()
+          });
+
+          alert(`✅ ${itemName} 교환 성공! (${requiredPoints}점 차감, 남은 포인트: ${newPoints}점)`);
+        });
+      });
+    });
+  </script>
+</head>
+
+<body>
+  <div class="exchange-container">
+    <h2>🎁 포인트 교환</h2>
+
+    <div class="input-area">
+      <label for="studentId">학번 입력:</label>
+      <input type="text" id="studentId" placeholder="예: 202312345" />
+    </div>
+
+    <div class="exchange-items">
+      <div class="exchange-item">
+        <div class="item-name">스타벅스 아메리카노</div>
+        <img src="images/icedAmericano.jpg" class="item-image" />
+        <div>필요 포인트: 100점</div>
+        <button class="exchange-button" data-item-name="아메리카노" data-required-points="100">교환하기</button>
+      </div>
+
+      <div class="exchange-item">
+        <div class="item-name">투썸 아이스박스</div>
+        <img src="images/cake.jpg" class="item-image" />
+        <div>필요 포인트: 150점</div>
+        <button class="exchange-button" data-item-name="아이스박스" data-required-points="150">교환하기</button>
+      </div>
+
+      <div class="exchange-item">
+        <div class="item-name">랜덤박스</div>
+        <img src="images/randomBox.png" class="item-image" />
+        <div>필요 포인트: 300점</div>
+        <button class="exchange-button" data-item-name="랜덤박스" data-required-points="300">교환하기</button>
+      </div>
+    </div>
+
+    <a href="index.html" class="back-button">← 메인 화면으로 돌아가기</a>
+  </div>
+</body>
+</html>

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>동아리 시간표</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: #f4f6f8;
+      padding: 40px;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      gap: 40px;
+    }
+    .left {
+      flex: 1;
+    }
+    .right {
+      flex: 0.5;
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    #studentInput {
+      margin-bottom: 20px;
+    }
+    input[type="text"] {
+      padding: 8px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      width: 200px;
+    }
+    button {
+      padding: 8px 16px;
+      margin-left: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      background-color: #0078ff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    table {
+      margin: 0 auto;
+      border-collapse: collapse;
+      width: 100%;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background-color: #d9e8fb;
+    }
+    td {
+      background-color: #fff;
+      min-height: 40px;
+    }
+    .activity-list h2 {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    .activity-item {
+      margin: 6px 0;
+      padding: 6px 10px;
+      background: #eef3ff;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .activity-item:hover {
+      background: #d6e4ff;
+    }
+  </style>
+
+  <!-- ✅ Firebase SDK 삽입 -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // ✅ 당신의 firebaseConfig로 교체하세요
+    const firebaseConfig =  {
+  "apiKey": "AIzaSyDFLLPA5Qu-LvRKvJYeNtbFFQKd7U89ymc",
+  "authDomain": "skkuclub-7fe2f.firebaseapp.com",
+  "projectId": "skkuclub-7fe2f",
+  "storageBucket": "skkuclub-7fe2f.firebasestorage.app",
+  "messagingSenderId": "275985224768",
+  "appId": "1:275985224768:web:c81ba81a0ac40c60a1fba5",
+  "measurementId": "G-7N8H7ZJLH1"
+};
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    window.saveSchedule = async function () {
+      const id = document.getElementById("studentId").value.trim();
+      if (!id) {
+        alert("학번을 입력하세요.");
+        return;
+      }
+      try {
+        await setDoc(doc(db, "timetables", id), {
+          student_id: id,
+          schedule: window.scheduleMap,
+          last_updated: new Date()
+        });
+        alert("✅ 저장 완료!");
+      } catch (err) {
+        console.error(err);
+        alert("❌ 저장 실패: " + err.message);
+      }
+    };
+  </script>
+</head>
+
+<body>
+  <div class="left">
+    <h1>📅 동아리 활동 시간표</h1>
+    <div id="studentInput">
+      <input type="text" id="studentId" placeholder="학번 입력">
+      <button onclick="saveSchedule()">저장</button>
+    </div>
+
+    <table id="scheduleTable">
+      <thead>
+        <tr>
+          <th>시간</th>
+          <th>월</th>
+          <th>화</th>
+          <th>수</th>
+          <th>목</th>
+          <th>금</th>
+        </tr>
+      </thead>
+      <tbody id="scheduleBody"></tbody>
+    </table>
+  </div>
+
+  <div class="right activity-list">
+    <h2>📝 활동 목록</h2>
+    <div id="activityList"></div>
+  </div>
+
+  <script>
+    const days = ["월", "화", "수", "목", "금"];
+    const hours = Array.from({ length: 13 }, (_, i) => i + 9); // 9~21시
+    const scheduleMap = {};
+    window.scheduleMap = scheduleMap; // 전역으로 공유
+
+    const activityOptions = [
+      { day: "월", start: "09:00", end: "10:30", name: "스터디 세션 A" },
+      { day: "수", start: "09:00", end: "10:30", name: "스터디 세션 B" },
+      { day: "목", start: "09:00", end: "10:30", name: "스터디 세션 C" },
+      { day: "금", start: "09:00", end: "10:30", name: "스터디 세션 D" },
+      { day: "화", start: "13:30", end: "15:00", name: "스터디 세션 A" },
+      { day: "목", start: "13:30", end: "15:00", name: "스터디 세션 B" },
+      { day: "금", start: "13:30", end: "15:00", name: "스터디 세션 C" },
+      { day: "월", start: "13:30", end: "15:00", name: "스터디 세션 D" },
+      { day: "월", start: "18:00", end: "20:00", name: "정기모임" },
+      { day: "목", start: "18:00", end: "20:00", name: "정기모임" },
+      { day: "화", start: "17:00", end: "18:00", name: "프로젝트 회의" },
+      { day: "화", start: "19:00", end: "20:30", name: "워크숍" },
+      { day: "수", start: "12:00", end: "13:00", name: "점심 네트워킹" },
+      { day: "목", start: "14:00", end: "16:00", name: "특강" },
+      { day: "금", start: "18:00", end: "20:00", name: "회식" },
+      { day: "금", start: "20:00", end: "21:00", name: "활동 보고" },
+      { day: "목", start: "17:00", end: "18:00", name: "팀 빌딩" },
+      { day: "수", start: "15:00", end: "16:00", name: "행사 준비" }
+    ];
+
+    const tbody = document.getElementById("scheduleBody");
+    for (const hour of hours) {
+      const row = document.createElement("tr");
+      const timeCell = document.createElement("td");
+      timeCell.textContent = `${hour}:00`;
+      row.appendChild(timeCell);
+
+      for (const day of days) {
+        const cell = document.createElement("td");
+        cell.dataset.hour = hour;
+        cell.dataset.day = day;
+        row.appendChild(cell);
+      }
+      tbody.appendChild(row);
+    }
+
+    const activityListDiv = document.getElementById("activityList");
+    activityOptions.forEach(opt => {
+      const item = document.createElement("div");
+      item.className = "activity-item";
+      item.textContent = `${opt.day} ${opt.start} ~ ${opt.end} - ${opt.name}`;
+      item.addEventListener('click', () => {
+        const startHour = parseInt(opt.start.split(":")[0]);
+        const endHour = parseInt(opt.end.split(":")[0]);
+        for (let h = startHour; h < endHour; h++) {
+          const cell = document.querySelector(`td[data-day='${opt.day}'][data-hour='${h}']`);
+          if (cell) {
+            cell.textContent = opt.name;
+            if (!scheduleMap[h]) scheduleMap[h] = {};
+            scheduleMap[h][opt.day] = opt.name;
+          }
+        }
+      });
+      activityListDiv.appendChild(item);
+    });
+  </script>
+</body>
+</html>

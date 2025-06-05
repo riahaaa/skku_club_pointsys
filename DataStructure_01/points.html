@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>포인트 조회</title>
+  <link rel="stylesheet" href="css/points_style.css" />
+
+  <style>
+    body {
+      font-family: 'MyFont', sans-serif;
+      background-color: #f5f5f5;
+    }
+
+    .points-container {
+      max-width: 500px;
+      margin: 50px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 10px rgba(248, 247, 247, 0.1);
+      text-align: center;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      width: 70%;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #0078ff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #005fcc;
+    }
+
+    .result-box {
+      margin-top: 20px;
+    }
+
+    .back-button {
+      display: inline-block;
+      margin-top: 20px;
+      text-decoration: none;
+      color: #ffffff;
+    }
+  </style>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFLLPA5Qu-LvRKvJYeNtbFFQKd7U89ymc",
+      authDomain: "skkuclub-7fe2f.firebaseapp.com",
+      projectId: "skkuclub-7fe2f",
+      storageBucket: "skkuclub-7fe2f.firebasestorage.app",
+      messagingSenderId: "275985224768",
+      appId: "1:275985224768:web:c81ba81a0ac40c60a1fba5",
+      measurementId: "G-7N8H7ZJLH1"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const btn = document.getElementById('lookupBtn');
+      const userInput = document.getElementById('studentId');
+      const pointSpan = document.getElementById('currentPoint');
+      const historyList = document.getElementById('pointHistory');
+      const resultBox = document.querySelector('.result-box');
+
+      btn.addEventListener('click', async () => {
+        const userId = userInput.value.trim();
+        if (!userId) {
+          alert("학번을 입력하세요!");
+          return;
+        }
+
+        const userRef = doc(db, 'users', userId);
+        const snapshot = await getDoc(userRef);
+
+        if (snapshot.exists()) {
+          const data = snapshot.data();
+          pointSpan.textContent = data.points ?? 0;
+          historyList.innerHTML = `<li>최근 활동: ${data.last_activity ?? '없음'} (${data.last_duration ?? 0}분)</li>`;
+          resultBox.style.display = 'block';
+        } else {
+          alert("❌ 해당 학번을 찾을 수 없습니다.");
+          resultBox.style.display = 'none';
+        }
+      });
+    });
+  </script>
+</head>
+
+<body>
+  <div class="points-container">
+    <h2>📌 포인트 조회</h2>
+    <input type="text" id="studentId" placeholder="학번을 입력하세요" />
+    <button id="lookupBtn">조회</button>
+
+    <div class="result-box" style="display:none;">
+      <div class="current-points">
+        현재 포인트: <span id="currentPoint">0</span> 점
+      </div>
+      <h3>최근 활동</h3>
+      <ul id="pointHistory" class="history-list"></ul>
+    </div>
+
+    <a href="index.html" class="back-button">← 메인으로 돌아가기</a>
+  </div>
+</body>
+</html>

@@ -1,0 +1,47 @@
+.container {
+    display: flex;
+    flex-direction: column; /* 로고와 버튼 그리드를 세로로 배치 */
+    align-items: center; /* 가로 방향 가운데 정렬 */
+    /*justify-content: center;*/ /* 세로 방향 가운데 정렬 (화면 전체 높이를 사용할 경우) */
+    height: 100vh; /* 화면 전체 높이 사용 (선택 사항) */
+    background-color: rgb(255, 255, 255);
+}
+
+.logo {
+    margin-bottom: 20px; /* 로고와 버튼 사이 간격 조절 */
+}
+
+.button-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2개의 컬럼으로 버튼 배치 */
+    gap: 10px; /* 버튼 사이 간격 조절 */
+    width: 80%; /* 버튼 그리드 너비 조절 */
+    max-width: 400px; /* 최대 너비 설정 */
+}
+
+.button {
+    font-family: 'MyFont';
+    display: inline-block;
+    padding: 15px 20px;
+    text-align: center;
+    text-decoration: none;
+    background-color: #a8dff2; /* 버튼 배경색 */
+    color: #333; /* 버튼 글자색 */
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.button:hover {
+    background-color: #e2e2e2;
+}
+
+@font-face {
+    font-family: 'MyFont';
+    src: url('../fonts/Cafe24Dangdanghae-v2.0.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+body {
+    font-family: 'MyFont';
+}

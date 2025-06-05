@@ -1,0 +1,51 @@
+.points-container {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+.current-points {
+    font-size: 2em;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+.history-list {
+    list-style: none;
+    padding: 0;
+    text-align: left;
+}
+.history-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+.history-item:last-child {
+    border-bottom: none;
+}
+.back-button {
+    font-family: 'MyFont';
+    display: inline-block;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: #6c757d;
+    color: white;
+    text-decoration: none;
+    font-size: 1em;
+    cursor: pointer;
+    margin-top: 20px;
+}
+.back-button:hover {
+    background-color: #545b62;
+}
+
+@font-face {
+    font-family: 'MyFont';
+    src: url('../fonts/Cafe24Dangdanghae-v2.0.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+body {
+    font-family: 'MyFont';
+}
